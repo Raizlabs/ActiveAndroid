@@ -52,7 +52,9 @@ public class DBRequestQueue extends Thread{
             }
 
             try{
-                AALog.d("DBRequestQueue + " + getName(), "Size is: " + mQueue.size() + " executing:" + runnable.getName());
+                if(AALog.isEnabled()) {
+                    AALog.d("DBRequestQueue + " + getName(), "Size is: " + mQueue.size() + " executing:" + runnable.getName());
+                }
                 runnable.run();
             } catch (Throwable t){
                 throw new RuntimeException(t);

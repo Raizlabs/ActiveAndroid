@@ -61,6 +61,10 @@ public abstract class Model implements IModel{
         SQLiteUtils.save(this);
 	}
 
+    public final void save(int mode) {
+        SQLiteUtils.save(this, mode);
+    }
+
     @Override
     public boolean exists(){
         return SQLiteUtils.exists(this);

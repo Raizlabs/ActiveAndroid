@@ -326,12 +326,29 @@ public final class SQLiteUtils {
                 Object object = field.get(IModel);
                 if(object==null){
                     throw new PrimaryKeyCannotBeNullException("The primary key: " + field.getName() + "from " + tableInfo.getTableName() + " cannot be null.");
-                } else if(object instanceof Number){
-                    sql = sql.replaceFirst("\\?", object.toString());
                 } else {
-                    String escaped = DatabaseUtils.sqlEscapeString(object.toString());
+                    final TypeSerializer typeSerializer = Cache.getParserForType(field.getType());
+                    if (typeSerializer != null) {
+                        // serialize data
+                        object = typeSerializer.serialize(object);
+                        // set new object type
+                        if (object != null) {
+                            Class fieldType = object.getClass();
+                            // check that the serializer returned what it promised
+                            if (!fieldType.equals(typeSerializer.getSerializedType())) {
+                                AALog.w(String.format("TypeSerializer returned wrong type: expected a %s but got a %s",
+                                        typeSerializer.getSerializedType(), fieldType));
+                            }
+                        }
+                    }
 
-                    sql = sql.replaceFirst("\\?", escaped);
+                    if (object instanceof Number) {
+                        sql = sql.replaceFirst("\\?", object.toString());
+                    } else {
+                        String escaped = DatabaseUtils.sqlEscapeString(object.toString());
+
+                        sql = sql.replaceFirst("\\?", escaped);
+                    }
                 }
             } catch (Throwable e) {
                 throw new RuntimeException(e);

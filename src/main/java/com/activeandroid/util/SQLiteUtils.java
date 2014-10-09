@@ -132,19 +132,23 @@ public final class SQLiteUtils {
             StringBuilder builder = new StringBuilder("PRIMARY KEY(");
 
 
-            int count = 0;
+            List<Field> primaryNonAutoIncrement = new ArrayList<Field>();
             for(int i  =0 ; i< primaryColumns.size(); i++){
                 PrimaryKey primaryKey = primaryColumns.get(i).getAnnotation(PrimaryKey.class);
                 if(!primaryKey.type().equals(PrimaryKey.Type.AUTO_INCREMENT)) {
-                    count++;
-                    builder.append(tableInfo.getColumnName(primaryColumns.get(i)));
-                    if (i < primaryColumns.size() - 1) {
-                        builder.append(", ");
-                    }
+                    primaryNonAutoIncrement.add(primaryColumns.get(i));
                 }
             }
 
-            if(count>0) {
+            int primaryNonAutoSize = primaryNonAutoIncrement.size();
+            for(int i = 0; i < primaryNonAutoSize; i++) {
+                builder.append(tableInfo.getColumnName(primaryNonAutoIncrement.get(i)));
+                if (i < primaryNonAutoSize - 1) {
+                    builder.append(", ");
+                }
+            }
+
+            if(primaryNonAutoSize>0) {
                 builder.append(")");
 
                 definitions.add(builder.toString());

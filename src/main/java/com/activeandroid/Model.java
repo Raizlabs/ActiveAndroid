@@ -21,6 +21,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.activeandroid.annotation.ForeignKey;
+import com.activeandroid.annotation.Ignore;
 import com.activeandroid.annotation.PrimaryKey;
 import com.activeandroid.content.ContentProvider;
 import com.activeandroid.query.Delete;
@@ -34,6 +35,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 @SuppressWarnings("unchecked")
+@Ignore
 public abstract class Model implements IModel{
 
 	private TableInfo mTableInfo;
@@ -42,6 +44,7 @@ public abstract class Model implements IModel{
 		mTableInfo = Cache.getTableInfo(getClass());
 	}
 
+    @PrimaryKey(type = PrimaryKey.Type.AUTO_INCREMENT)
     private long mId;
 
     /**

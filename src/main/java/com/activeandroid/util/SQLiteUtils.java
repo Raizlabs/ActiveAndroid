@@ -526,13 +526,14 @@ public final class SQLiteUtils {
         }
 
         if(!exists) {
-            IModel.setRowId(db.insert(tableInfo.getTableName(), null, values));
+            long id = db.insert(tableInfo.getTableName(), null, values);
+            IModel.setRowId(id);
             for(Field field : tableInfo.getPrimaryKeys()){
                 if(field.isAnnotationPresent(PrimaryKey.class) &&
                         field.getAnnotation(PrimaryKey.class).type().equals(PrimaryKey.Type.AUTO_INCREMENT)){
                     field.setAccessible(true);
                     try {
-                        field.set(IModel, IModel.getId());
+                        field.set(IModel, id);
                     } catch (Throwable e) {
                         throw new RuntimeException(e);
                     }

@@ -17,6 +17,7 @@ package com.activeandroid.util;
  */
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
@@ -435,6 +436,12 @@ public final class SQLiteUtils {
         final ContentValues values = new ContentValues();
 
         for (Field field : tableInfo.getFields()) {
+            PrimaryKey primaryKey = field.getAnnotation(PrimaryKey.class);
+
+            // skip autoincrement
+            if(primaryKey != null && primaryKey.type().equals(PrimaryKey.Type.AUTO_INCREMENT)) {
+                continue;
+            }
             String fieldName = tableInfo.getColumnName(field);
             Class<?> fieldType = field.getType();
 
@@ -532,10 +539,14 @@ public final class SQLiteUtils {
                 if(field.isAnnotationPresent(PrimaryKey.class) &&
                         field.getAnnotation(PrimaryKey.class).type().equals(PrimaryKey.Type.AUTO_INCREMENT)){
                     field.setAccessible(true);
-                    try {
-                        field.set(IModel, id);
-                    } catch (Throwable e) {
-                        throw new RuntimeException(e);
+                    if(field.getType().isAssignableFrom(Long.class) || field.getType().isAssignableFrom(long.class)) {
+                        try {
+                            field.set(IModel, id);
+                        } catch (Throwable e) {
+                            throw new RuntimeException(e);
+                        }
+                    } else {
+                        throw new IllegalArgumentException("Autoincrementing field " + field.getName() + " must be a long");
                     }
                 }
             }

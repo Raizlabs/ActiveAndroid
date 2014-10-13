@@ -44,7 +44,6 @@ public abstract class Model implements IModel{
 		mTableInfo = Cache.getTableInfo(getClass());
 	}
 
-    @PrimaryKey(type = PrimaryKey.Type.AUTO_INCREMENT)
     private long mId;
 
     /**

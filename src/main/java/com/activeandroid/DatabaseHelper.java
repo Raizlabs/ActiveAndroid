@@ -16,6 +16,14 @@ package com.activeandroid;
  * limitations under the License.
  */
 
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+
+import com.activeandroid.util.AALog;
+import com.activeandroid.util.NaturalOrderComparator;
+import com.activeandroid.util.SQLiteUtils;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,14 +34,6 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-
-import com.activeandroid.util.AALog;
-import com.activeandroid.util.NaturalOrderComparator;
-import com.activeandroid.util.SQLiteUtils;
 
 public final class DatabaseHelper extends SQLiteOpenHelper {
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -96,8 +96,9 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
 	public void copyAttachedDatabase(Context context, String databaseName) {
 		final File dbPath = context.getDatabasePath(databaseName);
 
+        boolean forceMove = getWritableDatabase().isDatabaseIntegrityOk();
 		// If the database already exists, return
-		if (dbPath.exists()) {
+		if (!forceMove && dbPath.exists()) {
 			return;
 		}
 

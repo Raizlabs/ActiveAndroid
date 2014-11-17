@@ -106,4 +106,8 @@ public final class ActiveAndroid {
 	public static void execSQL(String sql, Object[] bindArgs) {
 		Cache.openDatabase().execSQL(sql, bindArgs);
 	}
+
+    public static void checkDbIntegrity() {
+        Cache.checkDbIntegrity();
+    }
 }

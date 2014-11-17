@@ -16,14 +16,14 @@ package com.activeandroid;
  * limitations under the License.
  */
 
-import java.util.Collection;
-
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.util.LruCache;
 
 import com.activeandroid.serializer.TypeSerializer;
 import com.activeandroid.util.AALog;
+
+import java.util.Collection;
 
 public final class Cache {
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -101,6 +101,12 @@ public final class Cache {
 
 		AALog.v("ActiveAndroid disposed. Call initialize to use library.");
 	}
+
+    public static void checkDbIntegrity() {
+        if (!sDatabaseHelper.getWritableDatabase().isDatabaseIntegrityOk()) {
+            sDatabaseHelper.copyAttachedDatabase(sContext, sDatabaseConfiguration.getDatabaseName());
+        }
+    }
 
 	// Database access
 

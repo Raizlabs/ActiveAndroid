@@ -96,9 +96,8 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
 	public void copyAttachedDatabase(Context context, String databaseName) {
 		final File dbPath = context.getDatabasePath(databaseName);
 
-        boolean forceMove = getWritableDatabase().isDatabaseIntegrityOk();
 		// If the database already exists, return
-		if (!forceMove && dbPath.exists()) {
+		if (dbPath.exists()) {
 			return;
 		}
 

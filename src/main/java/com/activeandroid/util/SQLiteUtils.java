@@ -17,7 +17,6 @@ package com.activeandroid.util;
  */
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
@@ -390,9 +389,13 @@ public final class SQLiteUtils {
         return whereString;
     }
 
-    public static void delete(IModel IModel){
+    public static void delete(IModel IModel) {
+        delete(IModel, Cache.openDatabase());
+    }
+
+    public static void delete(IModel IModel, SQLiteDatabase database){
         TableInfo tableInfo = Cache.getTableInfo(IModel.getClass());
-        Cache.openDatabase().delete(tableInfo.getTableName(), SQLiteUtils.getWhereStatement(IModel, tableInfo), null);
+        database.delete(tableInfo.getTableName(), SQLiteUtils.getWhereStatement(IModel, tableInfo), null);
         Cache.removeEntity(IModel);
 
         Cache.getContext().getContentResolver()
@@ -430,9 +433,18 @@ public final class SQLiteUtils {
      * @param IModel
      * @param mode
      */
-    public static void save(IModel IModel, int mode){
+    public static void save(IModel IModel, int mode) {
+        save(IModel, mode, Cache.openDatabase());
+    }
+
+    /**
+     * Saves the given {@link com.activeandroid.IModel} to the DB.
+     * @param IModel
+     * @param mode
+     * @param db The database to save to
+     */
+    public static void save(IModel IModel, int mode, SQLiteDatabase db){
         TableInfo tableInfo = Cache.getTableInfo(IModel.getClass());
-        final SQLiteDatabase db = Cache.openDatabase();
         final ContentValues values = new ContentValues();
 
         for (Field field : tableInfo.getFields()) {

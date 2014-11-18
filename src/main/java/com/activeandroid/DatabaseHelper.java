@@ -35,7 +35,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public final class DatabaseHelper extends SQLiteOpenHelper {
+public class DatabaseHelper extends SQLiteOpenHelper {
 	//////////////////////////////////////////////////////////////////////////////////////
 	// PUBLIC CONSTANTS
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -129,14 +129,14 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
 	// PRIVATE METHODS
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	private void executePragmas(SQLiteDatabase db) {
+	protected void executePragmas(SQLiteDatabase db) {
 		if (SQLiteUtils.FOREIGN_KEYS_SUPPORTED) {
 			db.execSQL("PRAGMA foreign_keys=ON;");
 			AALog.i("Foreign Keys supported. Enabling foreign key features.");
 		}
 	}
 
-	private void executeCreate(SQLiteDatabase db) {
+	protected void executeCreate(SQLiteDatabase db) {
 		db.beginTransaction();
 		try {
 			for (TableInfo tableInfo : Cache.getTableInfos()) {
@@ -149,7 +149,7 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
 		}
 	}
 
-	private boolean executeMigrations(SQLiteDatabase db, int oldVersion, int newVersion) {
+	protected boolean executeMigrations(SQLiteDatabase db, int oldVersion, int newVersion) {
 		boolean migrationExecuted = false;
 		try {
 			final List<String> files = Arrays.asList(Cache.getContext().getAssets().list(MIGRATION_PATH));
@@ -185,7 +185,7 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
 		return migrationExecuted;
 	}
 
-	private void executeSqlScript(SQLiteDatabase db, String file) {
+	protected void executeSqlScript(SQLiteDatabase db, String file) {
 		try {
 			final InputStream input = Cache.getContext().getAssets().open(MIGRATION_PATH + "/" + file);
 			final BufferedReader reader = new BufferedReader(new InputStreamReader(input));

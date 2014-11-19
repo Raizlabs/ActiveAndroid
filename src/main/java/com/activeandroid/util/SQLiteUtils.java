@@ -96,13 +96,17 @@ public final class SQLiteUtils {
 		Cache.openDatabase().execSQL(sql, bindArgs);
 	}
 
-	public static <T extends IModel> List<T> rawQuery(Class<? extends IModel> type, String sql, String[] selectionArgs) {
-		Cursor cursor = Cache.openDatabase().rawQuery(sql, selectionArgs);
+	public static <T extends IModel> List<T> rawQuery(SQLiteDatabase database, Class<? extends IModel> type, String sql, String[] selectionArgs) {
+		Cursor cursor = database.rawQuery(sql, selectionArgs);
 		List<T> entities = processCursor(type, cursor);
 		cursor.close();
 
 		return entities;
 	}
+
+    public static <T extends IModel> List<T> rawQuery(Class<? extends IModel> type, String sql, String[] selectionArgs) {
+        return rawQuery(Cache.openDatabase(), type, sql, selectionArgs);
+    }
 
 	public static <T extends IModel> T rawQuerySingle(Class<? extends IModel> type, String sql, String[] selectionArgs) {
 		List<T> entities = rawQuery(type, sql, selectionArgs);

@@ -18,6 +18,7 @@ package com.activeandroid;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.support.v4.util.LruCache;
 
 import com.activeandroid.serializer.TypeSerializer;
@@ -103,11 +104,23 @@ public final class Cache {
 	}
 
     public static boolean checkDbIntegrity() {
-        if (!sDatabaseHelper.getWritableDatabase().isDatabaseIntegrityOk()) {
-            sDatabaseHelper.copyAttachedDatabase(sContext, sDatabaseConfiguration.getDatabaseName());
-            return false;
+        boolean ok = true;
+        String sql = "Pragma " + sDatabaseHelper.getWritableDatabase().getAttachedDbs().get(0).first + ".quick_check(1)";
+        SQLiteStatement statement = sDatabaseHelper.getWritableDatabase().compileStatement(sql);
+
+        try {
+            String result = statement.simpleQueryForString();
+            if (!result.equalsIgnoreCase("ok")) {
+                sDatabaseHelper.copyAttachedDatabase(sContext, sDatabaseConfiguration.getDatabaseName());
+                ok = false;
+            }
+        } finally {
+            if (statement != null) {
+                statement.close();
+            }
         }
-        return true;
+
+        return ok;
     }
 
 	// Database access

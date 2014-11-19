@@ -102,10 +102,12 @@ public final class Cache {
 		AALog.v("ActiveAndroid disposed. Call initialize to use library.");
 	}
 
-    public static void checkDbIntegrity() {
+    public static boolean checkDbIntegrity() {
         if (!sDatabaseHelper.getWritableDatabase().isDatabaseIntegrityOk()) {
             sDatabaseHelper.copyAttachedDatabase(sContext, sDatabaseConfiguration.getDatabaseName());
+            return false;
         }
+        return true;
     }
 
 	// Database access

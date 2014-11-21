@@ -59,7 +59,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public DatabaseHelper(Configuration configuration) {
 		super(configuration.getContext(), configuration.getDatabaseName(), null, configuration.getDatabaseVersion());
         mDatabaseName = configuration.getDatabaseName();
-		copyAttachedDatabase(configuration.getContext(), configuration.getDatabaseName());
+		copyAttachedDatabase(configuration.getContext(), configuration.getDatabaseName(), configuration.getDatabaseName());
 
         // temporary database uses the same methods
         mTempDatabase = new SQLiteOpenHelper(configuration.getContext(), TEMP_DB_NAME + configuration.getDatabaseName(),
@@ -84,6 +84,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 executeMigrations(db, oldVersion, newVersion);
             }
         };
+        // see if we need to make this mirror the prepackaged
+        copyAttachedDatabase(configuration.getContext(), TEMP_DB_NAME + configuration.getDatabaseName(), configuration.getDatabaseName());
         mTempDatabase.getWritableDatabase();
 	}
 
@@ -127,7 +129,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	// PUBLIC METHODS
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	public void copyAttachedDatabase(Context context, String databaseName) {
+	public void copyAttachedDatabase(Context context, String databaseName, String prepackagedName) {
 		final File dbPath = context.getDatabasePath(databaseName);
 
 		// If the database already exists, return
@@ -140,7 +142,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 		// Try to copy database file
         try {
-            writeDB(dbPath, context.getAssets().open(databaseName));
+            writeDB(dbPath, context.getAssets().open(prepackagedName));
         } catch (IOException e) {
             AALog.e(e.getMessage());
         }

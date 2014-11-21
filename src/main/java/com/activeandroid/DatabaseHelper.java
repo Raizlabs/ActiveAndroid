@@ -85,7 +85,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
         };
         // see if we need to make this mirror the prepackaged
-        copyAttachedDatabase(configuration.getContext(), TEMP_DB_NAME + configuration.getDatabaseName(), configuration.getDatabaseName());
+        restoreDatabase(configuration.getContext(), TEMP_DB_NAME + configuration.getDatabaseName(), configuration.getDatabaseName());
         mTempDatabase.getWritableDatabase();
 	}
 
@@ -143,6 +143,33 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		// Try to copy database file
         try {
             writeDB(dbPath, context.getAssets().open(prepackagedName));
+        } catch (IOException e) {
+            AALog.e(e.getMessage());
+        }
+    }
+
+    public void restoreDatabase(Context context, String databaseName, String prepackagedName) {
+        final File dbPath = context.getDatabasePath(databaseName);
+
+        // If the database already exists, return
+        if (dbPath.exists()) {
+            return;
+        }
+
+        // Make sure we have a path to the file
+        dbPath.getParentFile().mkdirs();
+
+        // Try to copy database file
+        try {
+            // check existing and use that as backup
+            File existingDb = context.getDatabasePath(getDatabaseName());
+            InputStream inputStream;
+            if(existingDb.exists()) {
+                inputStream = new FileInputStream(existingDb);
+            } else {
+                inputStream = context.getAssets().open(prepackagedName);
+            }
+            writeDB(dbPath, inputStream);
         } catch (IOException e) {
             AALog.e(e.getMessage());
         }

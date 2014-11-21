@@ -20,6 +20,9 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.activeandroid.manager.SingleDBManager;
+import com.activeandroid.runtime.DBRequest;
+import com.activeandroid.runtime.DBRequestInfo;
 import com.activeandroid.util.AALog;
 import com.activeandroid.util.NaturalOrderComparator;
 import com.activeandroid.util.SQLiteUtils;
@@ -297,18 +300,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /**
      * Saves the database as a backup
      */
-    public void backupDB(Context context) {
-        File backup = context.getDatabasePath(TEMP_DB_NAME + mDatabaseName);
-        if(backup.exists()) {
-            backup.delete();
-        }
-        File existing = context.getDatabasePath(mDatabaseName);
+    public void backupDB(final Context context) {
+        SingleDBManager.getSharedInstance().getQueue().add(new DBRequest(DBRequestInfo.createFetch()) {
+            @Override
+            public void run() {
+                File backup = context.getDatabasePath(TEMP_DB_NAME + mDatabaseName);
+                if(backup.exists()) {
+                    backup.delete();
+                }
+                File existing = context.getDatabasePath(mDatabaseName);
 
-        try {
-            backup.getParentFile().mkdirs();
-            writeDB(backup, new FileInputStream(existing));
-        } catch (FileNotFoundException e) {
-            AALog.e(e.getMessage());
-        }
+                try {
+                    backup.getParentFile().mkdirs();
+                    writeDB(backup, new FileInputStream(existing));
+                } catch (FileNotFoundException e) {
+                    AALog.e(e.getMessage());
+                }
+            }
+        });
+
     }
 }

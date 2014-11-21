@@ -116,7 +116,25 @@ public final class Cache {
         try {
             String result = statement.simpleQueryForString();
             if (!result.equalsIgnoreCase("ok")) {
-                helper.restoreBackUp(sContext);
+                ok = helper.restoreBackUp(sContext);
+            }
+        } finally {
+            if (statement != null) {
+                statement.close();
+            }
+        }
+
+        return ok;
+    }
+
+    public static boolean checkDbIntegrity(SQLiteOpenHelper helper) {
+        boolean ok = true;
+        String sql = "Pragma quick_check(1)";
+        SQLiteStatement statement = helper.getWritableDatabase().compileStatement(sql);
+
+        try {
+            String result = statement.simpleQueryForString();
+            if (!result.equalsIgnoreCase("ok")) {
                 ok = false;
             }
         } finally {

@@ -136,7 +136,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         final File dbPath = context.getDatabasePath(databaseName);
 
         // If the database already exists, return
-        if (dbPath.exists()) {
+        if (dbPath.exists() && Cache.checkDbIntegrity(this)) {
             return;
         }
 
@@ -149,7 +149,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             File existingDb = context.getDatabasePath(TEMP_DB_NAME + getDatabaseName());
             InputStream inputStream;
             // if it exists and the integrity is ok
-            if (existingDb.exists() && Cache.checkDbIntegrity(this)) {
+            if (existingDb.exists() && Cache.checkDbIntegrity(mTempDatabase)) {
                 inputStream = new FileInputStream(existingDb);
             } else {
                 inputStream = context.getAssets().open(prepackagedName);
@@ -213,7 +213,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      *
      * @param context
      */
-    public void restoreBackUp(Context context) {
+    public boolean restoreBackUp(Context context) {
+        boolean success = true;
+
         File db = context.getDatabasePath(TEMP_DB_NAME + mDatabaseName);
         File corrupt = context.getDatabasePath(mDatabaseName);
         if (corrupt.delete()) {
@@ -221,11 +223,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 writeDB(corrupt, new FileInputStream(db));
             } catch (IOException e) {
                 AALog.e(e.getMessage());
+                success = false;
             }
         } else {
             AALog.e("Failed to delete DB");
         }
-
+        return success;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////

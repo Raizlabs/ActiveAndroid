@@ -301,7 +301,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * Saves the database as a backup
      */
     public void backupDB(final Context context) {
-        SingleDBManager.getSharedInstance().getQueue().add(new DBRequest(DBRequestInfo.createFetch()) {
+        // highest priority ever!
+        SingleDBManager.getSharedInstance().getQueue().add(new DBRequest(DBRequestInfo.create(DBRequest.PRIORITY_UI+1)) {
             @Override
             public void run() {
                 File backup = context.getDatabasePath(TEMP_DB_NAME + mDatabaseName);

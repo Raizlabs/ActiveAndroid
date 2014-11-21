@@ -164,7 +164,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             // check existing and use that as backup
             File existingDb = context.getDatabasePath(getDatabaseName());
             InputStream inputStream;
-            if(existingDb.exists()) {
+            // if it exists and the integrity is ok
+            if(existingDb.exists() && Cache.checkDbIntegrity(this)) {
                 inputStream = new FileInputStream(existingDb);
             } else {
                 inputStream = context.getAssets().open(prepackagedName);

@@ -18,6 +18,7 @@ package com.activeandroid;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.support.v4.util.LruCache;
 
@@ -104,14 +105,18 @@ public final class Cache {
 	}
 
     public static boolean checkDbIntegrity() {
+        return checkDbIntegrity(sDatabaseHelper);
+    }
+
+    public static boolean checkDbIntegrity(DatabaseHelper helper) {
         boolean ok = true;
         String sql = "Pragma quick_check(1)";
-        SQLiteStatement statement = sDatabaseHelper.getWritableDatabase().compileStatement(sql);
+        SQLiteStatement statement = helper.getWritableDatabase().compileStatement(sql);
 
         try {
             String result = statement.simpleQueryForString();
             if (!result.equalsIgnoreCase("ok")) {
-                sDatabaseHelper.restoreBackUp(sContext);
+                helper.restoreBackUp(sContext);
                 ok = false;
             }
         } finally {

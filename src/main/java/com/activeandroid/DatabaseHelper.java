@@ -145,7 +145,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         // Try to copy database file
         try {
-            writeDB(dbPath, context.getAssets().open(prepackagedName));
+            // check existing and use that as backup
+            File existingDb = context.getDatabasePath(TEMP_DB_NAME + getDatabaseName());
+            InputStream inputStream;
+            // if it exists and the integrity is ok
+            if (existingDb.exists() && Cache.checkDbIntegrity(this)) {
+                inputStream = new FileInputStream(existingDb);
+            } else {
+                inputStream = context.getAssets().open(prepackagedName);
+            }
+            writeDB(dbPath, inputStream);
         } catch (IOException e) {
             AALog.e(e.getMessage());
         }

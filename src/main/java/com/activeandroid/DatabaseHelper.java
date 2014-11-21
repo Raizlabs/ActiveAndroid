@@ -26,6 +26,8 @@ import com.activeandroid.util.SQLiteUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,6 +44,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public final static String MIGRATION_PATH = "migrations";
 
+    public final static String TEMP_DB_NAME = "temp-";
+
+    private SQLiteOpenHelper mTempDatabase;
+
+    private String mDatabaseName;
+
     DatabaseHelperListener mListener;
 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -50,7 +58,33 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 	public DatabaseHelper(Configuration configuration) {
 		super(configuration.getContext(), configuration.getDatabaseName(), null, configuration.getDatabaseVersion());
+        mDatabaseName = configuration.getDatabaseName();
 		copyAttachedDatabase(configuration.getContext(), configuration.getDatabaseName());
+
+        // temporary database uses the same methods
+        mTempDatabase = new SQLiteOpenHelper(configuration.getContext(), TEMP_DB_NAME + configuration.getDatabaseName(),
+                null, configuration.getDatabaseVersion()) {
+
+            @Override
+            public void onOpen(SQLiteDatabase db) {
+                executePragmas(db);
+            }
+
+            @Override
+            public void onCreate(SQLiteDatabase db) {
+                executePragmas(db);
+                executeCreate(db);
+                executeMigrations(db, -1, db.getVersion());
+            }
+
+            @Override
+            public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+                executePragmas(db);
+                executeCreate(db);
+                executeMigrations(db, oldVersion, newVersion);
+            }
+        };
+        mTempDatabase.getWritableDatabase();
 	}
 
     public void setListener(DatabaseHelperListener listener){
@@ -67,7 +101,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             mListener.onOpen(db);
         }
 		executePragmas(db);
-	};
+	}
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
@@ -105,25 +139,55 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		dbPath.getParentFile().mkdirs();
 
 		// Try to copy database file
-		try {
-			final InputStream inputStream = context.getAssets().open(databaseName);
-			final OutputStream output = new FileOutputStream(dbPath);
+        try {
+            writeDB(dbPath, context.getAssets().open(databaseName));
+        } catch (IOException e) {
+            AALog.e(e.getMessage());
+        }
+    }
 
-			byte[] buffer = new byte[1024];
-			int length;
+    private void writeDB(File dbPath, InputStream existingDB) {
+        try {
+            final OutputStream output = new FileOutputStream(dbPath);
 
-			while ((length = inputStream.read(buffer)) > 0) {
-				output.write(buffer, 0, length);
-			}
+            byte[] buffer = new byte[1024];
+            int length;
 
-			output.flush();
-			output.close();
-			inputStream.close();
-		}
-		catch (IOException e) {
-			AALog.e("Failed to open file", e);
-		}
-	}
+            while ((length = existingDB.read(buffer)) > 0) {
+                output.write(buffer, 0, length);
+            }
+
+            output.flush();
+            output.close();
+            existingDB.close();
+        }
+        catch (IOException e) {
+            AALog.e("Failed to open file", e);
+        }
+    }
+
+    public String getDatabaseName() {
+        return mDatabaseName;
+    }
+
+    /**
+     * If integrity check fails, this method will use the backup db.
+     * @param context
+     */
+    public void restoreBackUp(Context context) {
+        File db = context.getDatabasePath(TEMP_DB_NAME + mDatabaseName);
+        File corrupt = context.getDatabasePath(mDatabaseName);
+        if(corrupt.delete()) {
+            try {
+                 writeDB(corrupt,  new FileInputStream(db));
+            } catch (IOException e) {
+                AALog.e(e.getMessage());
+            }
+        } else {
+            AALog.e("Failed to delete DB");
+        }
+
+    }
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// PRIVATE METHODS
@@ -199,4 +263,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			AALog.e("Failed to execute " + file, e);
 		}
 	}
+
+    /**
+     * Saves the database as a backup
+     */
+    public void backupDB(Context context) {
+        File backup = context.getDatabasePath(TEMP_DB_NAME + mDatabaseName);
+        if(backup.exists()) {
+            backup.delete();
+        }
+        File existing = context.getDatabasePath(mDatabaseName);
+
+        try {
+            backup.getParentFile().mkdirs();
+            writeDB(backup, new FileInputStream(existing));
+        } catch (FileNotFoundException e) {
+            AALog.e(e.getMessage());
+        }
+    }
 }

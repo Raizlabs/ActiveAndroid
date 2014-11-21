@@ -105,13 +105,13 @@ public final class Cache {
 
     public static boolean checkDbIntegrity() {
         boolean ok = true;
-        String sql = "Pragma " + sDatabaseHelper.getWritableDatabase().getAttachedDbs().get(0).first + ".quick_check(1)";
+        String sql = "Pragma quick_check(1)";
         SQLiteStatement statement = sDatabaseHelper.getWritableDatabase().compileStatement(sql);
 
         try {
             String result = statement.simpleQueryForString();
             if (!result.equalsIgnoreCase("ok")) {
-                sDatabaseHelper.copyAttachedDatabase(sContext, sDatabaseConfiguration.getDatabaseName());
+                sDatabaseHelper.restoreBackUp(sContext);
                 ok = false;
             }
         } finally {
@@ -187,5 +187,9 @@ public final class Cache {
             initialize(sDatabaseConfiguration, sDatabaseHelper.mListener);
             isUpgrading = false;
         }
+    }
+
+    public static void backUpDB(Context context) {
+        sDatabaseHelper.backupDB(context);
     }
 }

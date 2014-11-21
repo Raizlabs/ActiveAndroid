@@ -110,4 +110,8 @@ public final class ActiveAndroid {
     public static boolean checkDbIntegrity() {
         return Cache.checkDbIntegrity();
     }
+
+    public static void backupDB(Context context) {
+        Cache.backUpDB(context);
+    }
 }

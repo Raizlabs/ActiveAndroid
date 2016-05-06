@@ -1,3 +1,7 @@
+## Important Notice
+
+This repository is slated for deletion.  Please find other solutions.  
+
 [![Build Status](https://travis-ci.org/pardom/ActiveAndroid.png?branch=master)](https://travis-ci.org/pardom/ActiveAndroid) [![Stories in Ready](https://badge.waffle.io/pardom/ActiveAndroid.png)](http://waffle.io/pardom/ActiveAndroid)  
 # ActiveAndroid On Steroids
 
